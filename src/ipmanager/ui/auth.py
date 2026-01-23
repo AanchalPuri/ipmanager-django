@@ -22,13 +22,16 @@ class ModifiedSaml2Backend(Saml2Backend):
             user.is_staff = True
             user.is_superuser = True
             user.is_active = True
+            user.is_in_department = True
         elif 'ipmanager-user' in groups:
             user.is_staff = False
             user.is_superuser = False
             user.is_active = True
+            user.is_in_department = True
         else:
             user.is_staff = False
             user.is_superuser = False
             user.is_active = False
+            user.is_in_department = False
 
         return super()._update_user(user, attributes, attribute_mapping, force_save=True)

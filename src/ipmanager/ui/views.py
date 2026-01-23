@@ -15,6 +15,12 @@ class SuperUserRequiredMixin(UserPassesTestMixin):
     raise_exception = False
     login_url_url = 'login'  # Redirect to login page if not authorized
 
+class DepartmentRequiredMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_in_department
+    raise_exception = False
+    login_url_url = 'login'
+
 class RootView(TemplateView):
     template_name = 'ui/login_required.html'
 
@@ -49,7 +55,8 @@ class GroupListView(LoginRequiredMixin, ListView):
         context.update(
             form=TestIPForm,
             test_ip=self.request.GET.get('test_ip', ''),
-            is_superuser=self.request.user.is_superuser
+            is_superuser=self.request.user.is_superuser,
+            is_in_department=self.request.user.is_in_department
         )
         return context
 
@@ -84,11 +91,12 @@ class SingleGroupView(LoginRequiredMixin, DetailView):
             form=TestIPForm,
             contained=contained,
             test_ip=test_ip,
-            is_superuser=self.request.user.is_superuser
+            is_superuser=self.request.user.is_superuser,
+            is_in_department=self.request.user.is_in_department
         )
         return context
 
-class EditGroupView(LoginRequiredMixin, SuperUserRequiredMixin, UpdateView):
+class EditGroupView(LoginRequiredMixin, SuperUserRequiredMixin, DepartmentRequiredMixin, UpdateView):
     model = Group
     fields = ['key', 'name', 'description', 'export']
     template_name = 'ui/edit_group.html'
@@ -102,7 +110,7 @@ class EditGroupView(LoginRequiredMixin, SuperUserRequiredMixin, UpdateView):
         context.update(group=current_group)
         return context
 
-class CreateGroupView(LoginRequiredMixin, SuperUserRequiredMixin, CreateView):
+class CreateGroupView(LoginRequiredMixin, SuperUserRequiredMixin, DepartmentRequiredMixin, CreateView):
     model = Group
     fields = ['key', 'name', 'description', 'export']
     template_name = 'ui/new_group.html'
@@ -110,13 +118,13 @@ class CreateGroupView(LoginRequiredMixin, SuperUserRequiredMixin, CreateView):
     def get_success_url(self):
         return reverse('single_group', args=[self.object.key])
     
-class DeleteGroupView(LoginRequiredMixin, SuperUserRequiredMixin, DeleteView):
+class DeleteGroupView(LoginRequiredMixin, SuperUserRequiredMixin, DepartmentRequiredMixin, DeleteView):
     model = Group
 
     def get_success_url(self):
         return reverse('list_all_groups') 
 
-class CreateRelationView(LoginRequiredMixin, SuperUserRequiredMixin, CreateView):
+class CreateRelationView(LoginRequiredMixin, SuperUserRequiredMixin, DepartmentRequiredMixin, CreateView):
     form_class = RelationForm
     template_name = 'ui/create_relation_form.html'
 
@@ -128,13 +136,13 @@ class CreateRelationView(LoginRequiredMixin, SuperUserRequiredMixin, CreateView)
         context.update(group=Group.objects.filter(key=self.kwargs.get('key')).first())
         return context
 
-class DeleteRelationView(LoginRequiredMixin, SuperUserRequiredMixin, DeleteView):
+class DeleteRelationView(LoginRequiredMixin, SuperUserRequiredMixin, DepartmentRequiredMixin, DeleteView):
     model = Relation
 
     def get_success_url(self):
         return reverse('single_group', args=[self.object.subject.key])
     
-class CreateNoteView(LoginRequiredMixin, SuperUserRequiredMixin, CreateView):
+class CreateNoteView(LoginRequiredMixin, SuperUserRequiredMixin, DepartmentRequiredMixin, CreateView):
     form_class = NoteForm
     template_name = 'ui/add_note_form.html'
 
@@ -147,13 +155,13 @@ class CreateNoteView(LoginRequiredMixin, SuperUserRequiredMixin, CreateView):
         context.update(group=current_group)
         return context
     
-class DeleteNoteView(LoginRequiredMixin, SuperUserRequiredMixin, DeleteView):
+class DeleteNoteView(LoginRequiredMixin, SuperUserRequiredMixin, DepartmentRequiredMixin, DeleteView):
     model = Note
 
     def get_success_url(self):
         return reverse('single_group', args=[self.object.group.key])
     
-class CreateIPRangeView(LoginRequiredMixin, SuperUserRequiredMixin, CreateView):
+class CreateIPRangeView(LoginRequiredMixin, SuperUserRequiredMixin, DepartmentRequiredMixin, CreateView):
     form_class = IPRangeForm
     template_name = 'ui/add_ip_range_form.html'
 
@@ -166,7 +174,7 @@ class CreateIPRangeView(LoginRequiredMixin, SuperUserRequiredMixin, CreateView):
         context.update(group=current_group)
         return context
 
-class DeleteIPRangeView(LoginRequiredMixin, SuperUserRequiredMixin, DeleteView):
+class DeleteIPRangeView(LoginRequiredMixin, SuperUserRequiredMixin, DepartmentRequiredMixin, DeleteView):
     model = IPRange
 
     def get_success_url(self):
